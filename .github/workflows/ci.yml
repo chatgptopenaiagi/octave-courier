@@ -1,0 +1,87 @@
+name: Test and package
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  python:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.10', '3.12', '3.14']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install package
+        run: python -m pip install .
+      - name: Unit tests (Octave tests explicitly skip when runtime is absent)
+        run: python -m unittest discover -s tests -v
+      - name: Installed command smoke check
+        run: octave-courier --help
+
+  octave-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: '3.12'
+      - name: Install separate GNU Octave and headless plotting dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y octave gnuplot-nox fonts-freefont-otf ghostscript
+      - name: Install and test actual mathematical integration
+        run: |
+          python -m pip install .
+          python -m unittest discover -s tests -v
+          octave-courier --help
+          octave-courier doctor
+
+  distributions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: '3.12'
+      - name: Build wheel, source distribution and Linux launcher
+        run: |
+          python -m pip install build wheel 'setuptools>=77'
+          python build_tools/build_release.py --python-packages --linux-launcher
+      - name: Verify archive contents and checksums
+        run: python build_tools/verify_archives.py dist
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: python-and-linux-distributions
+          path: dist/*
+
+  windows-executable:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: '3.12'
+          architecture: x64
+      - name: Install build tooling
+        run: python -m pip install 'pyinstaller==6.22.3'
+      - name: Freeze Windows executable (GNU Octave stays external)
+        run: python build_tools/build_release.py --windows-executable
+      - name: Execute packaged command
+        shell: pwsh
+        run: '& (Get-ChildItem dist/*-windows-x86_64.exe).FullName --help'
+      - name: Verify packaged archive contents
+        run: python build_tools/verify_archives.py dist
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: windows-executable
+          path: dist/*

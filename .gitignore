@@ -1,0 +1,14 @@
+.release/
+dist/
+build/
+.venv/
+*.egg-info/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+*.spec
+FINAL-RELEASE-REPORT.md
+*.png
+!examples/*.png

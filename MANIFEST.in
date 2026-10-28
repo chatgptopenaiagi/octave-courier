@@ -1,0 +1,10 @@
+include *.md LICENSE
+recursive-include src *.py *.m
+recursive-include tests *.py
+recursive-include examples *.py *.m *.json
+recursive-include build_tools *.py *.ps1 *.sh
+recursive-include .github *.yml
+exclude FINAL-RELEASE-REPORT.md
+prune .release
+prune dist
+prune build

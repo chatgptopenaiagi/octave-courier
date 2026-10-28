@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "octave-courier"
+version = "0.1.0"
+description = "A small Python API and command-line bridge to a separately installed GNU Octave"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE", "THIRD-PARTY-NOTICES.md"]
+authors = [{name = "chatgptopenaiagi"}]
+keywords = ["octave", "mathematics", "linear-algebra", "numerical-computing"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Mathematics",
+]
+
+[project.urls]
+Homepage = "https://github.com/chatgptopenaiagi/octave-courier"
+Repository = "https://github.com/chatgptopenaiagi/octave-courier"
+Issues = "https://github.com/chatgptopenaiagi/octave-courier/issues"
+
+[project.scripts]
+octave-courier = "octave_courier.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+octave_courier = ["*.m"]
