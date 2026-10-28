@@ -39,6 +39,12 @@ def main():
             if "windows-x86_64" in path.name and path.suffix == ".zip":
                 assert any(name.endswith(".exe") for name in names), path
                 assert "licenses/LICENSE-Python.txt" in names, path
+                assert "licenses/LICENSE-OpenSSL-Apache-2.0.txt" in names, path
+                assert "licenses/LICENSE-Microsoft-VC14-Runtime.txt" in names, path
+                assert "licenses/LICENSE-libmpdec.txt" in names, path
+                assert "licenses/LICENSE-Unicode.txt" in names, path
+            if path.name.startswith("octave_courier-") and path.name.endswith(".tar.gz"):
+                assert any(name.endswith("/build_tools/licenses/OpenSSL-3.5.7-LICENSE.txt") for name in names), path
         rows.append({"filename": path.name, "size": path.stat().st_size, "sha256": hashlib.sha256(path.read_bytes()).hexdigest(), "archive_entries": len(names) if names is not None else None})
     assert rows, "No artifacts were found"
     print(json.dumps({"verified": True, "artifacts": rows}, indent=2))

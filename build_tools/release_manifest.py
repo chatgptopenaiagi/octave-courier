@@ -31,6 +31,11 @@ def main():
     commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
     if not re.fullmatch(r"[0-9a-f]{40}", commit):
         raise RuntimeError("A full final Git commit is required")
+    status = subprocess.check_output(["git", "status", "--porcelain", "--untracked-files=normal"], cwd=ROOT, text=True)
+    if status.strip():
+        raise RuntimeError("Commit all public source changes before binding a release manifest to HEAD")
+    if verification.get("source_commit") != commit:
+        raise RuntimeError("Verification must explicitly identify the same final source commit")
     payloads = [p for p in sorted(args.dist.iterdir()) if p.is_file() and p.name not in {"artifact-manifest.json", "SHA256SUMS"}]
     if not payloads:
         raise RuntimeError("No distribution artifacts exist")
